@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Accelerometer Demo</title>
+
+        <style>
+            .indicatorDot {
+                width: 30px;
+                height: 30px;
+                background-color: #ffab56;
+                border-radius: 50%;
+                position: fixed;
+            }
+        </style>
+
+        <script>
+            var rotation_degrees, frontToBack_degrees, leftToRight_degrees;
+            var acc, rr;
+
+            var record = false;
+            var motion_data_list = [];
+            var orient_data_list = [];
+
+            function getAccel() {
+                DeviceMotionEvent.requestPermission().then((response) => {
+                    if (response == "granted") {
+                        window.addEventListener(
+                            "deviceorientation",
+                            (event) => {
+                                rotation_degrees = event.alpha;
+                                frontToBack_degrees = event.beta;
+                                leftToRight_degrees = event.gamma;
+
+                                if (record) {
+                                    data1 = {a:rotation_degrees,b:frontToBack_degrees,g:leftToRight_degrees};
+                                    orient_data_list.push(data1);
+                                }
+                            }
+                        );
+
+                        window.addEventListener("devicemotion", (event) => {
+                            acc = event.accelerationIncludingGravity;
+                            rr = event.rotationRate;
+
+                            if (record) {
+                                data = {
+                                    acc_x: acc.x,
+                                    acc_y: acc.y,
+                                    acc_z: acc.z,
+                                    rr_a: rr.alpha,
+                                    rr_b: rr.beta,
+                                    rr_g: rr.gamma,
+                                };
+                                motion_data_list.push(data);
+                            }
+                        });
+                    }
+                });
+            }
+
+            function startRecord() {
+                record = true;
+            }
+
+            function endRecord() {
+                record = false;
+                var dataStr =
+                    "data:text/json;charset=utf-8," +
+                    encodeURIComponent(JSON.stringify(orient_data_list));
+                var downloadAnchorNode = document.createElement("a");
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", "data_orient.json");
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+
+                orient_data_list = [];
+            }
+        </script>
+    </head>
+    <body style="background-color: lightblue">
+        <button id="accelPermsButton" style="height: 50px" onclick="getAccel()">
+            <h1>Get Accelerometer Permissions</h1>
+        </button>
+        <button
+            id="startRecordButton"
+            style="height: 50px"
+            onclick="startRecord();"
+        >
+            <h1>StartRecording</h1>
+        </button>
+        <button
+            id="stopRecordButton"
+            style="height: 50px"
+            onclick="endRecord();"
+        >
+            <h1>StopRecording</h1>
+        </button>
+        <div class="indicatorDot" style="left: 30%; top: 30%"></div>
+    </body>
+</html>
