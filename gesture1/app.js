@@ -7,5 +7,5 @@ app.get("/", function (req, res) {
 });
 
 app.listen(80, function () {
-  console.log("Server is running on localhost3000");
+  console.log("Server is running on localhost80");
 });
