@@ -22,6 +22,10 @@
             var motion_data_list = [];
             var orient_data_list = [];
 
+            // window.onload = () => {
+            //     setInterval(checkSwing,10);
+            // }
+
             function getAccel() {
                 DeviceMotionEvent.requestPermission().then((response) => {
                     if (response == "granted") {
@@ -33,9 +37,15 @@
                                 leftToRight_degrees = event.gamma;
 
                                 if (record) {
-                                    data1 = {a:rotation_degrees,b:frontToBack_degrees,g:leftToRight_degrees};
+                                    data1 = {
+                                        a: rotation_degrees,
+                                        b: frontToBack_degrees,
+                                        g: leftToRight_degrees,
+                                    };
                                     orient_data_list.push(data1);
                                 }
+
+                                checkSwing();
                             }
                         );
 
@@ -60,6 +70,8 @@
             }
 
             function startRecord() {
+                motion_data_lis= [];
+                orient_data_list = [];
                 record = true;
             }
 
@@ -73,9 +85,33 @@
                 downloadAnchorNode.setAttribute("download", "data_orient.json");
                 document.body.appendChild(downloadAnchorNode);
                 downloadAnchorNode.click();
-
-                orient_data_list = [];
+                downloadAnchorNode.remove();
             }
+
+            function checkSwing() {
+                const frame_window = 30; // check last thirty entries in data_orient_list
+                const len = orient_data_list.length;
+                const frame_start = len-frame_window;
+                const end_frame_start = frame_start + 25;
+
+                if (len < 30) {
+                    return false;
+                }
+
+                const start_window = orient_data_list.slice(frame_start,end_frame_start);
+                const end_window = orient_data_list.slice(end_frame_start,len);
+
+                let starting_orient_cond = start_window.map(x => withinRange(x.a,90,260)).reduce((a,b)=>a && b,false);
+                let ending_orient_cond = end_window.map(x => withinRange(x.a,0,30) || withinRange(x.a,330,360)).reduce((a,b)=>a && b,false);
+                let axis_cond = orient_data_list.slice(frame_start,len);
+
+                return starting_orient_cond && ending_orient_cond;
+            }
+
+            function withinRange(x,a,b) {
+                return x > a && x < b;
+            }
+
         </script>
     </head>
     <body style="background-color: lightblue">
