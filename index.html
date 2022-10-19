@@ -89,23 +89,25 @@
             }
 
             function checkSwing() {
-                const frame_window = 30; // check last thirty entries in data_orient_list
+                const frame_window = 20; // check last thirty entries in data_orient_list
                 const len = orient_data_list.length;
                 const frame_start = len-frame_window;
-                const end_frame_start = frame_start + 25;
+                const end_frame_start = frame_start + 15;
 
-                if (len < 30) {
+                if (len < frame_window) {
                     return false;
                 }
 
                 const start_window = orient_data_list.slice(frame_start,end_frame_start);
                 const end_window = orient_data_list.slice(end_frame_start,len);
+                const all_window = orient_data_list.slice(frame_start,len);
 
-                let starting_orient_cond = start_window.map(x => withinRange(x.a,90,260)).reduce((a,b)=>a && b,false);
-                let ending_orient_cond = end_window.map(x => withinRange(x.a,0,30) || withinRange(x.a,330,360)).reduce((a,b)=>a && b,false);
-                let axis_cond = orient_data_list.slice(frame_start,len);
+                let starting_orient_cond = start_window.map(x => withinRange(x.b,90,260)).reduce((a,b)=>a && b,false);
+                let ending_orient_cond = end_window.map(x => withinRange(x.b,0,30) || withinRange(x.b,330,360)).reduce((a,b)=>a && b,false);
+                let null_axis_cond_a = all_window.map(x => withinRange(x.a,0,30) || withinRange(x.a,330,360)).reduce((a,b)=>a && b,false);
+                let null_axis_cond_g = all_window.map(x => withinRange(x.g,-20,20)).reduce((a,b)=>a && b,false);
 
-                return starting_orient_cond && ending_orient_cond;
+                return starting_orient_cond && ending_orient_cond && null_axis_cond_a && null_axis_cond_g;
             }
 
             function withinRange(x,a,b) {
