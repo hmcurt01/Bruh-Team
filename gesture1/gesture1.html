@@ -43,6 +43,8 @@ function getAccel(){
                 var curTime = new Date().getTime(); 
                 var diffTime = curTime - last_update;
                 var spunDiffTime = curTime - lastSpun;
+                document.getElementById("myText2").innerHTML = rotation_degrees;
+
 
                 if (spun == 2) {
                     document.getElementById("myText").innerHTML = "You did the gesture!";
@@ -111,6 +113,8 @@ function reset() {
     <button id="accelPermsButton" onclick="getAccel()" style="height:50px;">Get Accelerometer Permissions</button>
     <button id="reset" onclick="reset()" style="height:50px;">Reset</button>
     <h1><span id="myText"></span></h1>
+    <h1>Bruh<span id="myText2"></span></h1>
+
 </div>
 </body>
 </html>

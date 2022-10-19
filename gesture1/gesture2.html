@@ -1,0 +1,132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accelerometer Demo</title>
+
+    <style>
+    </style>
+
+<script> 
+
+
+
+var rotation_degrees = 0;
+var frontToBack_degrees = 0;
+var leftToRight_degrees = 0;
+// record the last updated time
+var last_update = 0;
+// for acceleration
+var x_first = 0
+var x_max = 0
+var active = false
+var spun = 0
+var lastSpun = 0;
+var test = 0
+
+function getAccel(){
+    DeviceMotionEvent.requestPermission().then(response => {
+        if (response == 'granted') {
+       // Add a listener to get smartphone orientation 
+           // in the alpha-beta-gamma axes (units in degrees)
+            window.addEventListener('deviceorientation',(event) => {
+                // Expose each orientation angle in a more readable way
+                rotation_degrees = event.alpha;
+                frontToBack_degrees = event.beta;
+                leftToRight_degrees = event.gamma;
+                
+            });
+
+            window.addEventListener('devicemotion', (eventData) => {
+                // get theacceleration
+                var acceleration = eventData.accelerationIncludingGravity;
+                var curTime = new Date().getTime(); 
+                var diffTime = curTime - last_update;
+                var spunDiffTime = curTime - lastSpun;
+                document.getElementById("myText2").innerHTML = spun;
+                document.getElementById("myText3").innerHTML = "You're good to go!"
+                document.getElementById("myText4").innerHTML = ""
+
+
+
+                if (spun == 2) {
+                    document.getElementById("myText").innerHTML = "You did the gesture!";
+                }
+
+                if (active == false) {
+
+                    if (rotation_degrees > 100 && rotation_degrees < 160) {
+                        last_update = curTime
+                        x_first = rotation_degrees
+                        x_max = x_first
+                        active = true
+                    } 
+                } else {     
+                    if (diffTime < 100 && spun <= 1) {
+                        if (rotation_degrees <= x_max * 1.01) {
+                            if (rotation_degrees <= x_first - 90) {
+                                if (spun == 1)  {
+                                    if (spunDiffTime > 2000) {
+                                        spun = 0 
+                                    } else {
+                                        spun = 2
+                                    }
+                                } else {
+                                    spun = 1
+                                    lastSpun = curTime
+                                    active = false
+                                }
+                            } else {
+                                if (rotation_degrees < x_max) {
+                                    last_update = curTime 
+                                    x_max = rotation_degrees
+                                }
+                            }
+                        } else {
+                            active = false
+                        }
+                    } else {
+                        active = false
+                    }
+                }
+
+                if (spun == 1)  {
+                    if (curTime - lastSpun > 2000) {
+                        spun = 0
+                }
+                }
+        })
+        }
+    });
+}
+
+function reset() {
+    active = false
+    spun = 0
+    x_max = 0
+    document.getElementById("myText").innerHTML = ""
+}
+
+</script>
+
+</head>
+<body style="background-color:lightblue;">
+
+<div id="main">
+    <button id="accelPermsButton" onclick="getAccel()" style="height:50px;">Get Accelerometer Permissions</button>
+    <button id="reset" onclick="reset()" style="height:50px;">Reset</button>
+    <h1><span id="myText"></span></h1>
+    <h1>Spun: <span id="myText2"></span></h1>
+    <h1><span id="myText3"></span></h1>
+    <h1>Press the Get Accelerometer Permissions to get started<span id="myText4"></span></h1>
+
+
+
+
+
+
+
+</div>
+</body>
+</html>
