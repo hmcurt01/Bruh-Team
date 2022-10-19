@@ -42,6 +42,13 @@ var last_x;
 var last_y;
 var last_z;
 var count = 0;
+var x_first = 0
+var x_last = 0
+var x_max = 0
+var x_vals = []
+var index = 0
+var active = false
+var spun = false
 
 
 function getAccel(){
@@ -54,8 +61,6 @@ function getAccel(){
                 rotation_degrees = event.alpha;
                 frontToBack_degrees = event.beta;
                 leftToRight_degrees = event.gamma;
-                document.getElementById("myText").innerHTML = frontToBack_degrees;
-
                 
                 // Update velocity according to how tilted the phone is
                 // Since phones are narrower than they are long, double the increase to the x velocity
@@ -82,40 +87,54 @@ function getAccel(){
             });
             window.addEventListener('devicemotion', (eventData) => {
                 // get theacceleration
-                var acceleration = eventData.accelerationIncludingGravity; 
-
-                // time
+                var acceleration = eventData.accelerationIncludingGravity;
+                document.getElementById("myText2").innerHTML = frontToBack_degrees;
+                document.getElementById("myText3").innerHTML = active;
+                document.getElementById("myText5").innerHTML = spun;
+                document.getElementById("myText6").innerHTML = index;
+                document.getElementById("myText7").innerHTML = x_max
                 var curTime = new Date().getTime(); 
-                var diffTime = curTime -last_update;
-                document.getElementById("myText3").innerHTML = curTime;
-                // time difference
-                if (diffTime > 100) {
-                    last_update = curTime; 
+                var diffTime = curTime - last_update;
 
-                    x = acceleration.x; 
-                    y = acceleration.y; 
-                    z = acceleration.z; 
-                    document.getElementById("myText2").innerHTML = x;
-                    document.getElementById("myText5").innerHTML = x;
-                    document.getElementById("myText6").innerHTML = y;
-                    document.getElementById("myText7").innerHTML = z;
+                document.getElementById("myText").innerHTML = diffTime
 
-                var speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 30000; 
+                if (active == false && spun == false) {
 
-                if (speed > SHAKE_THRESHOLD) { 
-                // after you shaked
-                    document.getElementById("myText4").innerHTML = "shaked";
+                    if (frontToBack_degrees > -10 && frontToBack_degrees < 10) {
+                        last_update = curTime
+                        x_first = frontToBack_degrees
+                        x_max = x_first
+                        active = true
+                    } 
+                } else {     
+                    if (diffTime < 50 && spun == false) {
+                        last_update = curTime 
+                        if (frontToBack_degrees >= x_max * .95) {
+                            if (frontToBack_degrees >= x_first + 90) {
+                                spun = true
+                                active = false
+                            } else {
+                                if (frontToBack_degrees > x_max) {
+                                    x_max = frontToBack_degrees
+                                }
+                            }
+                        } else {
+                            active = false
+                        }
+                    } else {
+                        active = false
+                    }
                 }
-                // record the previous data
-                last_x = x; 
-                last_y = y; 
-                last_z = z; 
-            } 
                 
             }
             )
         }
     });
+}
+
+function reset() {
+    active = false
+    spun = false
 }
 
 </script>
@@ -126,15 +145,17 @@ function getAccel(){
 
 <div id="main">
     <button id="accelPermsButton" onclick="getAccel()" style="height:50px;">Get Accelerometer Permissions</button>
+    <button id="reset" onclick="reset()" style="height:50px;">Reset</button>
+
 
 
     <div class="indicatorDot" style="left:30%; top:30%;"></div>
     <h1>"the value for angle number is: " <span id="myText"></span></h1>
     <h1>"the value for x number is: " <span id="myText2"></span></h1>
-    <h1>"the value for time number is: " <span id="myText3"></span></h1>
-    <h1>"xacc :::::" <span id="myText5"></span></h1>
-    <h1>"yacc :::::" <span id="myText6"></span></h1>
-    <h1>"zacc :::::" <span id="myText7"></span></h1>
+    <h1>"active: " <span id="myText3"></span></h1>
+    <h1>"spun :::::" <span id="myText5"></span></h1>
+    <h1>"index :::::" <span id="myText6"></span></h1>
+    <h1>"array[index] :::::" <span id="myText7"></span></h1>
     <h1>"shaked :::::" <span id="myText4"></span></h1>
 </div>
 
