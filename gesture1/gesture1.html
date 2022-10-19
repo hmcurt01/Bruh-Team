@@ -23,6 +23,8 @@ var x_max = 0
 var active = false
 var spun = 0
 var lastSpun = 0;
+var initial_side_angle = 0
+var side_angle_diff = 0
 
 function getAccel(){
     DeviceMotionEvent.requestPermission().then(response => {
@@ -43,9 +45,12 @@ function getAccel(){
                 var curTime = new Date().getTime(); 
                 var diffTime = curTime - last_update;
                 var spunDiffTime = curTime - lastSpun;
-                document.getElementById("myText2").innerHTML = rotation_degrees;
+                var alpha_angle_diff = initial_side_angle - leftToRight_degrees
+                document.getElementById("myText2").innerHTML = Math.abs(side_angle_diff);
+                document.getElementById("myText3").innerHTML = active;
+                document.getElementById("myText4").innerHTML = spun;
 
-
+                // if the user has completed two spins aka the gesture
                 if (spun == 2) {
                     document.getElementById("myText").innerHTML = "You did the gesture!";
                 }
@@ -57,41 +62,51 @@ function getAccel(){
                         x_first = frontToBack_degrees
                         x_max = x_first
                         active = true
+                       alpha_angle_diff = leftToRight_degrees
                     } 
                 } else {     
                     if (diffTime < 20 && spun <= 1) {
+                        // if the current angle is larger than the most previous angle
                         if (frontToBack_degrees >= x_max * .95) {
+                            // if the current angle is 75 degrees larger than the original angle
                             if (frontToBack_degrees >= x_first + 75) {
+                                // if one spun has already occured
                                 if (spun == 1)  {
-                                    if (spunDiffTime > 1000) {
-                                        spun = 0 
+                                    // if the time between the first spun and this one is less than some time
+                                    if (spunDiffTime > 2000) {
+                                        spun = 0
+                                    // otherwise
                                     } else {
                                         spun = 2
                                     }
+                                // if a spun has not already occured // 0 spuns  
                                 } else {
                                     spun = 1
                                     lastSpun = curTime
                                     active = false
                                 }
+                            // if the current angle is NOT more than 75 degrees larger than the original angle    
                             } else {
+                                // if it is still alrger than the previous x_max / previous angle // it is still moving upwards 
                                 if (frontToBack_degrees > x_max) {
                                     last_update = curTime 
                                     x_max = frontToBack_degrees
-                                }
+                                } 
                             }
                         } else {
                             active = false
                         }
+                    // the movement has timed out because the difference of time is too great
                     } else {
                         active = false
                     }
                 }
 
                 if (spun == 1)  {
-                    if (curTime - lastSpun > 1000) {
+                    if (curTime - lastSpun > 2000) {
                         spun = 0
                 }
-                }
+            }
         })
         }
     });
@@ -113,7 +128,12 @@ function reset() {
     <button id="accelPermsButton" onclick="getAccel()" style="height:50px;">Get Accelerometer Permissions</button>
     <button id="reset" onclick="reset()" style="height:50px;">Reset</button>
     <h1><span id="myText"></span></h1>
-    <h1>Bruh<span id="myText2"></span></h1>
+    <h1>Bruh bruh front to back<span id="myText2"></span></h1>
+    <h1>Bruh rotation<span id="myText3"></span></h1>
+    <h1>Bruh side to side <span id="myText4"></span></h1>
+
+
+
 
 </div>
 </body>
