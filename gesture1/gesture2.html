@@ -24,6 +24,9 @@ var active = false
 var spun = 0
 var lastSpun = 0;
 var test = 0
+document.getElementById("myText3").textContent = "Press the Get Accelerometer Permissions button to get started!"
+
+
 
 function getAccel(){
     DeviceMotionEvent.requestPermission().then(response => {
@@ -45,10 +48,6 @@ function getAccel(){
                 var diffTime = curTime - last_update;
                 var spunDiffTime = curTime - lastSpun;
                 document.getElementById("myText2").innerHTML = spun;
-                document.getElementById("myText3").innerHTML = "You're good to go!"
-                document.getElementById("myText4").innerHTML = ""
-
-
 
                 if (spun == 2) {
                     document.getElementById("myText").innerHTML = "You did the gesture!";
@@ -65,7 +64,7 @@ function getAccel(){
                 } else {     
                     if (diffTime < 100 && spun <= 1) {
                         if (rotation_degrees <= x_max * 1.01) {
-                            if (rotation_degrees <= x_first - 90) {
+                            if (rotation_degrees <= x_first - 70) {
                                 if (spun == 1)  {
                                     if (spunDiffTime > 2000) {
                                         spun = 0 
@@ -118,8 +117,7 @@ function reset() {
     <button id="reset" onclick="reset()" style="height:50px;">Reset</button>
     <h1><span id="myText"></span></h1>
     <h1>Spun: <span id="myText2"></span></h1>
-    <h1><span id="myText3"></span></h1>
-    <h1>Press the Get Accelerometer Permissions to get started<span id="myText4"></span></h1>
+    <h1>"Press the Get Accelerometer Permissions button to get started!"<span id="myText3"></span></h1>
 
 
 
