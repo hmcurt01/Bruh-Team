@@ -6,50 +6,23 @@
     <title>Accelerometer Demo</title>
 
     <style>
-    .indicatorDot{
-        width: 30px;
-        height: 30px;
-        background-color: #ffab56;
-        border-radius: 50%;
-        position:fixed;
-    }
     </style>
 
 <script> 
 
 
 
-// /////
-var px = 50; // Position x and y
-var py = 50;
-var vx = 0.0; // Velocity x and y
-var vy = 0.0;
-var updateRate = 1/180; // Sensor refresh rate
 var rotation_degrees = 0;
 var frontToBack_degrees = 0;
 var leftToRight_degrees = 0;
-
-
-
-var SHAKE_THRESHOLD = 6000;
 // record the last updated time
 var last_update = 0;
 // for acceleration
-var x;
-var y;
-var z;
-var last_x;
-var last_y;
-var last_z;
-var count = 0;
 var x_first = 0
-var x_last = 0
 var x_max = 0
-var x_vals = []
-var index = 0
 var active = false
-var spun = false
-
+var spun = 0
+var lastSpun = 0;
 
 function getAccel(){
     DeviceMotionEvent.requestPermission().then(response => {
@@ -62,43 +35,20 @@ function getAccel(){
                 frontToBack_degrees = event.beta;
                 leftToRight_degrees = event.gamma;
                 
-                // Update velocity according to how tilted the phone is
-                // Since phones are narrower than they are long, double the increase to the x velocity
-                vx = vx + leftToRight_degrees * updateRate*2; 
-                vy = vy + frontToBack_degrees * updateRate;
-                
-                // Update position and clip it to bounds
-                px = px + vx*.5;
-                if (px > 98 || px < 0){ 
-                    px = Math.max(0, Math.min(98, px)) // Clip px between 0-98
-                    vx = 0;
-                }
-
-                py = py + vy*.5;
-                if (py > 98 || py < 0){
-                    py = Math.max(0, Math.min(98, py)) // Clip py between 0-98
-                    vy = 0;
-                }
-                
-                dot = document.getElementsByClassName("indicatorDot")[0]
-                dot.setAttribute('style', "left:" + (px) + "%;" +
-                                              "top:" + (py) + "%;");
-                
             });
+
             window.addEventListener('devicemotion', (eventData) => {
                 // get theacceleration
                 var acceleration = eventData.accelerationIncludingGravity;
-                document.getElementById("myText2").innerHTML = frontToBack_degrees;
-                document.getElementById("myText3").innerHTML = active;
-                document.getElementById("myText5").innerHTML = spun;
-                document.getElementById("myText6").innerHTML = index;
-                document.getElementById("myText7").innerHTML = x_max
                 var curTime = new Date().getTime(); 
                 var diffTime = curTime - last_update;
+                var spunDiffTime = curTime - lastSpun;
 
-                document.getElementById("myText").innerHTML = diffTime
+                if (spun == 2) {
+                    document.getElementById("myText").innerHTML = "You did the gesture!";
+                }
 
-                if (active == false && spun == false) {
+                if (active == false) {
 
                     if (frontToBack_degrees > -10 && frontToBack_degrees < 10) {
                         last_update = curTime
@@ -107,14 +57,23 @@ function getAccel(){
                         active = true
                     } 
                 } else {     
-                    if (diffTime < 50 && spun == false) {
-                        last_update = curTime 
+                    if (diffTime < 20 && spun <= 1) {
                         if (frontToBack_degrees >= x_max * .95) {
-                            if (frontToBack_degrees >= x_first + 90) {
-                                spun = true
-                                active = false
+                            if (frontToBack_degrees >= x_first + 75) {
+                                if (spun == 1)  {
+                                    if (spunDiffTime > 1000) {
+                                        spun = 0 
+                                    } else {
+                                        spun = 2
+                                    }
+                                } else {
+                                    spun = 1
+                                    lastSpun = curTime
+                                    active = false
+                                }
                             } else {
                                 if (frontToBack_degrees > x_max) {
+                                    last_update = curTime 
                                     x_max = frontToBack_degrees
                                 }
                             }
@@ -125,20 +84,25 @@ function getAccel(){
                         active = false
                     }
                 }
-                
-            }
-            )
+
+                if (spun == 1)  {
+                    if (curTime - lastSpun > 1000) {
+                        spun = 0
+                }
+                }
+        })
         }
     });
 }
 
 function reset() {
     active = false
-    spun = false
+    spun = 0
+    x_max = 0
+    document.getElementById("myText").innerHTML = ""
 }
 
 </script>
-
 
 </head>
 <body style="background-color:lightblue;">
@@ -146,18 +110,7 @@ function reset() {
 <div id="main">
     <button id="accelPermsButton" onclick="getAccel()" style="height:50px;">Get Accelerometer Permissions</button>
     <button id="reset" onclick="reset()" style="height:50px;">Reset</button>
-
-
-
-    <div class="indicatorDot" style="left:30%; top:30%;"></div>
-    <h1>"the value for angle number is: " <span id="myText"></span></h1>
-    <h1>"the value for x number is: " <span id="myText2"></span></h1>
-    <h1>"active: " <span id="myText3"></span></h1>
-    <h1>"spun :::::" <span id="myText5"></span></h1>
-    <h1>"index :::::" <span id="myText6"></span></h1>
-    <h1>"array[index] :::::" <span id="myText7"></span></h1>
-    <h1>"shaked :::::" <span id="myText4"></span></h1>
+    <h1><span id="myText"></span></h1>
 </div>
-
 </body>
 </html>
