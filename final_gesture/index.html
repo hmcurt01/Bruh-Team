@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>gesture demo</title>
+
+    <script>
+      var curTime1 = 0;
+      //gesture 1 : rotate twice set-up
+      var last_update_for_gesture2 = 0;
+
+      var alpha = 0;
+      var beta = 0;
+      var gamma = 0;
+      // for acceleration
+      var active = 0;
+      var temp_count = 0;
+      var total_count = 0;
+
+      //gesture 2 : rotate with speed set-up
+      var SHAKE_THRESHOLD = .35;
+      var curTime2 = 0;
+      // record the last updated time
+      var last_update = 0;
+      var last_trigger = 0;
+      // for acceleration
+      var x = 0;
+      var y = 0;
+      var z = 0;
+      var last_x = 0;
+      var last_y = 0;
+      var last_z = 0;
+      var count = 0;
+      var activity = 0;
+
+
+      // for gesture 2
+      var x_first = 0
+      var x_max = 0
+      var active = false
+      var spun_total = 0
+      var last_update2 = 0;
+      var frontToBack_degrees = 0;
+      var count2 = 0
+
+
+
+      function reset() {
+        //gesture 1 : rotate twice set-up
+        curTime1 = 0;
+        last_update_for_gesture2 = 0;
+        alpha = 0;
+        beta = 0;
+        gamma = 0;
+        active = 0;
+        temp_count = 0;
+        total_count = 0;
+        count2 = 0;
+
+        //gesture 2
+        x = 0;
+        y = 0;
+        z = 0;
+        last_x = 0;
+        last_y = 0;
+        last_z = 0;
+        count = 0;
+        activity += 1
+        document.getElementById("activity").innerHTML = activity
+      }
+
+      function getAccel() {
+        DeviceMotionEvent.requestPermission().then((response) => {
+          if (response == "granted") {
+            window.addEventListener('deviceorientation',(event) => {
+                // Expose each orientation angle in a more readable way
+                frontToBack_degrees = event.beta;
+                
+            });
+            window.addEventListener("devicemotion", (eventData) => {
+              // get theacceleration
+              var acceleration = eventData.accelerationIncludingGravity;
+
+              var curTime2 = new Date().getTime(); 
+              var diffTime2 = curTime2 - last_update2;
+              curTime1 = new Date().getTime();
+              document.getElementById("time1").innerHTML = curTime1;
+              document.getElementById("activity").innerHTML = activity
+              document.getElementById("count2").innerHTML = count2
+              if (active == false) {
+                  if (frontToBack_degrees > -20 && frontToBack_degrees < 20) {
+                      last_update2 = curTime2
+                      x_first = frontToBack_degrees
+                      x_max = x_first
+                      active = true
+                  } 
+              } else {     
+                  if (diffTime2 < 50) {
+                      // if the current angle is larger than the most previous angle
+                      if (frontToBack_degrees >= x_max * .95) {
+                          // if the current angle is 75 degrees larger than the original angle
+                          if (frontToBack_degrees >= x_first + 70) {
+                              // if one spun has already occured
+                              count2 += 1
+                              active = false
+                          // if the current angle is NOT more than 75 degrees larger than the original angle    
+                          } else {
+                              // if it is still alrger than the previous x_max / previous angle // it is still moving upwards 
+                              if (frontToBack_degrees > x_max) {
+                                  last_update2 = curTime 
+                                  x_max = frontToBack_degrees
+                              } 
+                          }
+                      // if the current angle is not larger than .95 of the previous max
+                      } else {
+                          active = false
+                      }
+                  // the movement has timed out because the difference of time is too great
+                  } else {
+                      active = false
+                  }
+              }
+              curTime = new Date().getTime();
+
+              var diffTime = curTime - last_update;
+              document.getElementById("count").innerHTML = count;
+
+              // time difference
+              if (diffTime > 100) {
+                last_update = curTime;
+
+                x = acceleration.x;
+                y = acceleration.y;
+                z = acceleration.z;
+
+                var speed = Math.abs(x - last_x) / diffTime;
+
+                if (speed > SHAKE_THRESHOLD && last_trigger <= curTime - 500) {
+                  // after you shaked
+                  count = count + 1;
+                  document.getElementById("count").innerHTML = count;
+                  last_trigger = curTime;
+                }
+                // record the previous data
+                last_x = x;
+                last_y = y;
+                last_z = z;
+              }
+            });
+          }})
+    }
+    </script>
+  </head>
+  <body style="background-color: lightblue">
+    <div id="main">
+      <button
+        id="accelPermsButton"
+        onclick="getAccel()"
+        style="height: 100px; font-size: 30px"
+      >
+        start
+      </button>
+      <button id="123" onclick="reset()" style="height: 100px; font-size: 30px">
+        next activity
+      </button>
+      <h1 style="font-size: 50px">time_stamp | <span id="time1"></span></h1>
+      <!-- <h1 style="font-size: 50px">time_stamp | <span id="time2"></span></h1> -->
+      <h1 style="font-size: 50px">
+        gesture 1 (flick) detection count:  | <span id="count"></span>
+      </h1>
+      <h1 style="font-size: 50px">
+        gesture 2 (pull up) detection count:  | <span id="count2"></span>
+      </h1>
+      <h1 style="font-size: 50px">
+        Activity:  | <span id="activity"></span>
+      </h1>
+      <!-- <h1 style="font-size: 50px">alpha | <span id="alpha"></span></h1>
+      <h1 style="font-size: 50px">beta | <span id="beta"></span></h1>
+      <h1 style="font-size: 50px">gamma | <span id="gamma"></span></h1>
+      <h1 style="font-size: 50px">
+        last_update_for_gesture2 | <span id="last_update_for_gesture2"></span>
+      </h1>
+      <h1 style="font-size: 50px">diff | <span id="diff"></span></h1> -->
+
+    
+    </div>
+  </body>
+</html>
